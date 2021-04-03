@@ -1,22 +1,23 @@
+console.log('callback for fb', process.env.BACKEND_URL, process.env.BACKEND_URL + 'auth/facebook-callback')
 module.exports = {
     'facebookAuth' : {
         'clientId' 	:  process.env.FACEBOOK_KEY,
         'clientSecret' 	: process.env.FACEBOOK_SECRET,
-        'callbackURL' 	: process.env.BACKEND_URL + '/auth/facebook-callback',
+        'callbackURL' 	: process.env.BACKEND_URL + 'auth/facebook-callback',
         'scope'	: ['public_profile','email'],
         'profileFields': ['id', 'email', 'displayName', ]
     },
     'googleAuth' : {
         'clientId' 	:  process.env.GOOGLE_KEY,
         'clientSecret' 	: process.env.GOOGLE_SECRET,
-        'callbackURL' 	: process.env.BACKEND_URL + '/auth/google-callback',
+        'callbackURL' 	: process.env.BACKEND_URL + 'auth/google-callback',
         'scope': ['profile', 'email'],
         'prompt': 'select_account'
     },
     'linkedinAuth' : {
         'clientId' 	:  process.env.LINKEDIN_KEY,
         'clientSecret' 	: process.env.LINKEDIN_SECRET,
-        'callbackURL' 	: process.env.BACKEND_URL + '/auth/linkedin-callback',
+        'callbackURL' 	: process.env.BACKEND_URL + 'auth/linkedin-callback',
         'scope': ['r_emailaddress', 'r_liteprofile'], // reademail
         'prompt': 'select_account'
     },
