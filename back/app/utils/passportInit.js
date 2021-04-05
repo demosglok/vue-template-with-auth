@@ -12,7 +12,7 @@ function createUserFromProfile(profile) {
   const user = new User();
   user.created_at = Date.now();
   const email = profile.email ? profile.email : ((profile.emails && profile.emails.length > 0) ? profile.emails[0] : null);
-  user.email = (email instanceof Object && email.value) ? email.value : email.toString();
+  user.email = (email instanceof Object && email.value) ? email.value : (email ? email.toString() : null);
   user.display_name = profile.displayName || (user.email ? user.email.split('@')[0] : '');
   if(profile.name instanceof Object && profile.name.givenName) {
       user.name = `${profile.name.givenName} ${profile.name.familyName}`;
@@ -34,12 +34,40 @@ async function tryFindUser(req, profile) {
         user = await User.findById(req.user.id);
     }
     if(!user && profile.email) {
-        user = await User.findOne({email: profile.email});
+        user = await User.findOne({email: profile.email.toLowerCase()});
     }
     if (!user && profile.emails && profile.emails.length > 0) {
-        user = await User.findOne({ email: profile.emails[0].value });
+        user = await User.findOne({ email: profile.emails[0].value.toLowerCase() });
     }
     return user;
+}
+
+async function updateFBIfNecessary(user, profile) {
+    if(!user.facebook || !user.facebook.id) {
+        user.facebook = {id: profile.id, username: profile.username, name: profile._json.name};
+        await user.save();
+    }
+}
+
+async function updateGoogleIfNecessary(user, profile) {
+    if(!user.google || !user.google.id) {
+        user.google = {id: profile.id, name: profile._json.name, given_name: profile._json.given_name, family_name: profile._json.family_name};
+        await user.save();
+    }
+}
+
+async function updateGitHubIfNecessary(user, profile) {
+    if(!user.github || !user.github.id) {
+        user.github = {id: profile.id, login: profile._json.login, name: profile._json.name};
+        await user.save();
+    }
+}
+
+async function updateLinkedinIfNecessary(user, profile) {
+    if(!user.linkedin || !user.linkedin.id) {
+        user.linkedin = {id: profile.id,  firstName: profile._json.firstName, lastName: profile._json.lastName};
+        await user.save();
+    }
 }
 module.exports = () => {
   // =========================================================================
@@ -66,12 +94,11 @@ module.exports = () => {
       let user = await User.findOne({ 'facebook.id': profile.id });
       if (user) return done(null, user);
       user = await tryFindUser(req, profile);
-      if (user) return done(null, user);
+      if (!user) {
+          user = createUserFromProfile(profile);
+      }
 
-      user = createUserFromProfile(profile);
-
-      user.facebook = {id: profile.id, token, name: `${profile.name.givenName} ${profile.name.familyName}`};
-      await user.save();
+      await updateFBIfNecessary(user, profile);
       done(null, user);
     } catch (e) {
       console.log('error storing fb user profile', e.message);
@@ -107,14 +134,11 @@ module.exports = () => {
       try {
         let user = await User.findOne({ 'google.id': profile.id });
         if (user) return done(null, user);
-        user = await tryFindUser(req, profile);
-        if (user) return done(null, user);
-
-        user = createUserFromProfile(profile);
-
-        user.google = {id: profile.id, token: accessToken, name: profile.name};
-
-        await user.save();
+        user = await tryFindUser(request, profile);
+        if (!user) {
+            user = createUserFromProfile(profile);
+        }
+        await updateGoogleIfNecessary(user, profile);
         done(null, user);
       } catch (e) {
         console.log('error storing google user profile', e.message);
@@ -125,26 +149,24 @@ module.exports = () => {
   ));
 
   passport.use(new GithubStrategy({
-    clientID: configAuth.googleAuth.clientId,
-    clientSecret: configAuth.googleAuth.clientSecret,
-    callbackURL: configAuth.googleAuth.callbackURL,
+    clientID: configAuth.githubAuth.clientId,
+    clientSecret: configAuth.githubAuth.clientSecret,
+    callbackURL: configAuth.githubAuth.callbackURL,
     passReqToCallback: true
   },
     async function (request, accessToken, refreshToken, profile, done) {
       try {
-        let user = await User.findOne({ 'google.id': profile.id });
+        let user = await User.findOne({ 'github.id': profile.id });
         if (user) return done(null, user);
-        user = await tryFindUser(req, profile);
-        if (user) return done(null, user);
+        user = await tryFindUser(request, profile);
+        if (!user) {
+            user = createUserFromProfile(profile);
+        }
 
-        user = createUserFromProfile(profile);
-
-        user.google = {id: profile.id, token: accessToken, name: profile.name};
-
-        await user.save();
+        await updateGitHubIfNecessary(user, profile);
         done(null, user);
       } catch (e) {
-        console.log('error storing google user profile', e.message);
+        console.log('error storing github user profile', e.message);
         done(new Error(e.message));
       }
       return null;
@@ -152,26 +174,25 @@ module.exports = () => {
   ));
 
   passport.use(new LinkedinStrategy({
-    clientID: configAuth.googleAuth.clientId,
-    clientSecret: configAuth.googleAuth.clientSecret,
-    callbackURL: configAuth.googleAuth.callbackURL,
+    clientID: configAuth.linkedinAuth.clientId,
+    clientSecret: configAuth.linkedinAuth.clientSecret,
+    callbackURL: configAuth.linkedinAuth.callbackURL,
+    scope: configAuth.linkedinAuth.scope,
     passReqToCallback: true
   },
     async function (request, accessToken, refreshToken, profile, done) {
       try {
-        let user = await User.findOne({ 'google.id': profile.id });
+        let user = await User.findOne({ 'linkedin.id': profile.id });
         if (user) return done(null, user);
-        user = await tryFindUser(req, profile);
-        if (user) return done(null, user);
+        user = await tryFindUser(request, profile);
+        if (!user) {
+            user = createUserFromProfile(profile);
+        }
 
-        user = createUserFromProfile(profile);
-
-        user.google = {id: profile.id, token: accessToken, name: profile.name};
-
-        await user.save();
+        await updateLinkedinIfNecessary(user, profile);
         done(null, user);
       } catch (e) {
-        console.log('error storing google user profile', e.message);
+        console.log('error storing linkedin user profile', e.message);
         done(new Error(e.message));
       }
       return null;

@@ -23,17 +23,16 @@ export default {
   },
   methods: {
     facebook() {
-      console.log('facebook');
       window.location = config.authUrls.fb;
     },
     google() {
-      console.log('google');
+      window.location = config.authUrls.google;
     },
     github() {
-      console.log('github');
+      window.location = config.authUrls.github;
     },
     linkedin() {
-      console.log('linkedin');
+      window.location = config.authUrls.linkedin;
     }
   }
 }

@@ -46,22 +46,20 @@ module.exports = {
   async linkedin(req, res, next) {
     req.session.redirect_after_login = req.query.redirect_after_login;
     passport.authenticate(
-	'google',
+	'linkedin',
 	{
-	    scope : authConfig.googleAuth.scope,
-	    prompt: authConfig.googleAuth.prompt
+	    scope : authConfig.linkedinAuth.scope,
 	}
     )(req,res,next);
   },
   async linkedinCallback(req, res, next) {
     try {
-      passport.authenticate('google', {
+      passport.authenticate('linkedin', {
         successRedirect : req.session.redirect_after_login || '/',
         failureRedirect : '/failure'
       })(req,res,next);
     } catch(ex) {
-      console.log('failed to authenticate via google', ex.message);
-      res.send(`Failed to authenticate via google. ${ex.message}. Please try again later`);
+      res.send(`Failed to authenticate via linkedin. ${ex.message}. Please try again later`);
     }
 
   },
@@ -70,22 +68,20 @@ module.exports = {
   async github(req, res, next) {
     req.session.redirect_after_login = req.query.redirect_after_login;
     passport.authenticate(
-	'google',
+	'github',
 	{
-	    scope : authConfig.googleAuth.scope,
-	    prompt: authConfig.googleAuth.prompt
+	    scope : authConfig.githubAuth.scope,
 	}
     )(req,res,next);
   },
   async githubCallback(req, res, next) {
     try {
-      passport.authenticate('google', {
+      passport.authenticate('github', {
         successRedirect : req.session.redirect_after_login || '/',
         failureRedirect : '/failure'
       })(req,res,next);
     } catch(ex) {
-      console.log('failed to authenticate via google', ex.message);
-      res.send(`Failed to authenticate via google. ${ex.message}. Please try again later`);
+      res.send(`Failed to authenticate via github. ${ex.message}. Please try again later`);
     }
 
   },

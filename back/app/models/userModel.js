@@ -2,29 +2,30 @@ const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
   name: String,
-  email: { type: String, index: true, unique: true },
+  email: { type: String, lowercase: true, index: true},
   display_name: String,
 
   created_at: Date,
   facebook: {
     id: { type: String, index: true },
-    token: String,
-    email: String,
+    username: String,
+    name: String,
   },
   google: {
     id: { type: String, index: true },
-    token: String,
-    email: String,
+    given_name: String,
+    family_name: String,
+    name: String
   },
   linkedin: {
     id: { type: String, index: true },
-    token: String,
-    email: String,
+    firstName: mongoose.Schema.Types.Mixed,
+    lastName: mongoose.Schema.Types.Mixed
   },
   github: {
     id: { type: String, index: true },
-    token: String,
-    email: String,
+    login: String,
+    name: String
   },
 });
 
