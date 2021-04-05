@@ -4,10 +4,8 @@
     <p>
       Account page for user
     </p>
-    <p>
-      Here should be some personal user data
-    </p>
-
+    <p>Name: {{user.name}}</p>
+    <p>Email: {{user.email}}</p>
 
   </div>
 </template>
@@ -17,6 +15,11 @@ export default {
   name: 'Account',
   props: {
   },
+  computed: {
+    user() {
+      return this.$store.getters.getUser;
+    }
+  }
 }
 </script>
 

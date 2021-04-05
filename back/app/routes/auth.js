@@ -14,4 +14,6 @@ router.get('/github-callback', authController.githubCallback);
 router.get('/linkedin', authController.linkedin);
 router.get('/linkedin-callback', authController.linkedinCallback);
 
+router.get('/logout', authController.logout);
+
 module.exports = router;

@@ -1,4 +1,3 @@
-console.log('callback for fb', process.env.BACKEND_URL, process.env.BACKEND_URL + 'auth/facebook-callback')
 module.exports = {
     'facebookAuth' : {
         'clientId' 	:  process.env.FACEBOOK_KEY,
